@@ -1,0 +1,3 @@
+# Security reporting and maintenance expectations
+
+This is a preview with fictional local SQLite and simulated-controller effects. For a suspected vulnerability, use a **private GitHub vulnerability-reporting channel if enabled** by the repository owner; otherwise request a private contact route through the repository's published maintainer information before sharing exploit details. Do not publish live secrets, active exploit material or customer data in a public issue. The project does **not** advertise a staffed security team, response SLA, active bug bounty, automated issue triage or production support. Plain functional bugs and reproducible tests can be discussed in ordinary repository issues if the owner enables that workflow.

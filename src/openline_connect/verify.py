@@ -23,12 +23,15 @@ def inspect(receipts,pinned_keys,*,expected_head=None,expected_seq=None,request=
         if r.get('decision')=='DENY':
             if o['status'] not in ('REFUSED_PRE_EFFECT',):raise ValueError('false_denial_outcome')
             if r.get('authenticated_subject') is True and not r.get('subject'):raise ValueError('invalid_authenticated_subject')
-        if r.get('decision')=='ALLOW' and o['status']!='FULFILLED':raise ValueError('contradictory_allow')
+        if (r.get('decision')=='ALLOW') != (o.get('status')=='FULFILLED'):raise ValueError('contradictory_allow')
+        if 'body' in entry and (digest(entry['body']) if entry['body'] is not None else None)!=o.get('body_sha256'):raise ValueError('body_digest_mismatch')
         seq=r['decision_seq'];prev=hashlib.sha256(entry['receipt'].encode()).hexdigest()
         if request is not None and digest(request)!=r['request_sha256']:raise ValueError('request_digest_mismatch')
         if body is not None and digest(body)!=o['body_sha256']:raise ValueError('body_digest_mismatch')
     if expected_head and expected_head!=prev:raise ValueError('history_head_mismatch')
     if expected_seq is not None and expected_seq!=seq:raise ValueError('history_suffix_or_gap')
     return {'verified':True,'decision_seq':seq,'head_decision_hash':prev,
+            'checkpoint_pinned':expected_head is not None and expected_seq is not None,
+            'history_complete_relative_to_checkpoint':expected_head is not None and expected_seq is not None,
             'what_is_proven':'pinned seller signed these ordered claims and optional provided bytes match the claimed digests',
             'what_is_not_proven':'external settlement finality, delivery, full log completeness without an independently saved head'}

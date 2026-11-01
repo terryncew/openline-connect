@@ -11,17 +11,23 @@ def main(argv=None):
     p=argparse.ArgumentParser(prog='openline-connect')
     sub=p.add_subparsers(dest='cmd',required=True)
     d=sub.add_parser('demo');d.add_argument('--output')
+    un=sub.add_parser('unified-demo',help='Run real PR90 Accept on loopback against Connect SDK, fictional local effects')
+    un.add_argument('--output',default=None,help='Optional NEW directory; contains private fictional test keys')
     v=sub.add_parser('verify');v.add_argument('packet',nargs='?');v.add_argument('--home',default='.openline');v.add_argument('--seller-public',required=True);v.add_argument('--expected-head');v.add_argument('--expected-seq',type=int)
+    conf=sub.add_parser('conformance',help='Native supplier/controller behavioral validation (fictional local effects)')
+    conf.add_argument('--target',required=True,help='Executable command for supplier JSON-lines adapter')
+    conf.add_argument('--output')
     c=sub.add_parser('check');c.add_argument('app')
     m=sub.add_parser('mcp');m.add_argument('--fallback-stdio',action='store_true');m.add_argument('--home')
     init = sub.add_parser('init', help='Create receiver-owned keys and a default-deny local profile')
     init.add_argument('--home', default='.openline')
     grant = sub.add_parser('allow', help='Explicitly allow one bounded fictional operation')
     grant.add_argument('--home', default='.openline')
-    grant.add_argument('--action', required=True, choices=['record.update'])
-    grant.add_argument('--target', required=True)
-    grant.add_argument('--value', required=True)
-    grant.add_argument('--amount-cents', type=int, required=True)
+    grant.add_argument('--action', required=True)
+    grant.add_argument('--target')
+    grant.add_argument('--value')
+    grant.add_argument('--amount-cents', type=int, default=0)
+    grant.add_argument('--params-json',help='JSON exact signed parameters for a receiver-registered custom action')
     grant.add_argument('--ttl-seconds', type=int, default=300)
     grant.add_argument('--name')
     serve = sub.add_parser('serve', help='Local official MCP stdio server (no TCP listener)')
@@ -33,11 +39,15 @@ def main(argv=None):
     verify_home.add_argument('--expected-head')
     verify_home.add_argument('--expected-seq', type=int)
     a=p.parse_args(argv)
+    if a.cmd == 'unified-demo':
+        from .unified_demo import walkthrough
+        print(json.dumps(walkthrough(a.output),sort_keys=True));return
     if a.cmd == 'init':
         print(json.dumps(initialize(a.home),sort_keys=True)); return
     if a.cmd == 'allow':
         print(json.dumps(allow_local(a.home, action=a.action, target=a.target, value=a.value,
-            amount_cents=a.amount_cents, ttl_seconds=a.ttl_seconds, grant_name=a.name),sort_keys=True)); return
+            amount_cents=a.amount_cents, ttl_seconds=a.ttl_seconds, grant_name=a.name,
+            params=json.loads(a.params_json) if a.params_json else None),sort_keys=True)); return
     if a.cmd == 'serve':
         from .mcp_server import run_mcp
         run_mcp(read_engine(a.home),fallback=a.fallback_stdio); return
@@ -72,6 +82,10 @@ def main(argv=None):
         # Outcomes may have seq 1 and 2; no trusted keys are ever sourced from the packet.
         result=inspect(items,{'seller':a.seller_public},expected_head=a.expected_head,expected_seq=a.expected_seq)
         print(json.dumps(result,sort_keys=True))
+    elif a.cmd=='conformance':
+        from .native_conformance import run
+        result=run(a.target,a.output);print(json.dumps(result,sort_keys=True))
+        if result['status']!='PASS':raise SystemExit(1)
     elif a.cmd=='check':
         sys.path.insert(0,os.getcwd())
         module,symbol=a.app.split(':',1);obj=getattr(importlib.import_module(module),symbol)
