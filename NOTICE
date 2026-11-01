@@ -1,6 +1,6 @@
 OpenLine Connect — Developer Preview
 Copyright 2026 Terrynce White
 
-No external project source code is vendored in this distribution.
-Runtime dependencies are installed separately under their respective licenses.
-See docs/THIRD_PARTY_NOTICES.md for known direct dependencies.
+The project source is distributed with the Apache License, Version 2.0; see LICENSE and the package's Apache-2.0 metadata. This notice does not independently establish contributor chain of title or permission to distribute code for which a different owner may hold rights.
+
+No external dependency source is intentionally vendored into this distribution. Runtime/optional dependencies are installed separately and retain their own copyrights and licenses. See docs/THIRD_PARTY_NOTICES.md for declared direct dependencies; verify upstream notices when bundling.

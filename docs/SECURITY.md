@@ -1,5 +1,27 @@
 # Security and authority: local fictional developer preview
 
+## Local receiver-grant and effect-entry security model (dev1)
+
+Receiver grants use `grant_mode=exact_parameters_v1` and a receiver-signed
+`parameters_sha256` for the canonical full operation dict (target, value and
+amount included). The buyer mandate binds the same bytes independently. There
+is no parameter-range grant in this candidate; `max_amount_cents` remains a
+secondary ceiling, NOT permission to change an otherwise approved amount.
+Missing or legacy grant digests fail closed. Existing rc2 receiver grants must be
+reissued intentionally before this candidate can admit a new effect.
+
+`revoke(jti)` revokes one buyer-signed mandate. A buyer with a still-trusted
+signing key may sign another mandate within the active receiver grant.
+`revoke_grant(grant_id)` durably terminates that receiver authority at future
+SQLite effect entries, including for replacement buyer mandates. Neither
+operation undoes effects committed before revocation wins the SQLite write lock.
+
+Receipt `verified: true` authenticates signed claims and contiguous supplied
+history beginning at the genesis claim; it does not establish the ledger is
+complete. `history_complete_relative_to_checkpoint` becomes true only if
+both an externally pinned expected sequence and head hash are supplied.
+Without an independent retained checkpoint, a valid prefix may verify.
+
 This is a local SQLite transaction engine with a seller-owned authorization trust configuration, not a general-purpose sandbox. It requires caller-signed mandates binding subject/seller/action/target/full parameter hash/expiration/amount. Mandates and pinned roots are provisioned *outside* agent input. SQLite WAL with `synchronous=FULL` and `BEGIN IMMEDIATE` serializes the local effect and signed record. Replay identity is seller+action+nonce and request hash; a changed request is 409.
 
 Paid operations must be explicitly registered with `payment_required=True`. Mock facilitator assertions use a separately pinned key and exact action/target/request digest/amount/expiry; unknown status is unresolved. The bridge does **not** invoke a facilitator; no settlement is retried automatically. After simulated settlement, crash recovery resumes a SQLite-local handler only. The status `SETTLED_UNFULFILLED_REFUND_DUE` is a signed assertion of failed local fulfillment, not a refund instruction or completed refund.

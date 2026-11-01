@@ -21,7 +21,9 @@ def invoke(engine,name,args):
     if name=='openline_check_authorization':return engine.dry_run(args['action'],args['params'],args['authorization'])
     if name=='openline_verify_receipt':return inspect(args['entries'],{'seller':args['seller_public']},expected_head=args.get('expected_head'),expected_seq=args.get('expected_seq'))
     if name=='openline_list_unresolved':return {'unresolved':engine.list_unresolved()}
-    if name=='openline_execute_protected_action':return engine.execute(action=args['action'],params=args['params'],authorization=args['authorization'],nonce=args['nonce'],payment=args.get('payment'))
+    if name=='openline_execute_protected_action':
+        kw=dict(action=args['action'],params=args['params'],authorization=args['authorization'],nonce=args['nonce'],payment=args.get('payment'))
+        return engine.execute_task(task_id=args['task_id'],**kw) if args.get('task_id') else engine.execute(**kw)
     if name=='openline_recover_operation':return engine.recover(args['scope'],args['nonce'])
 
 def definitions():
@@ -29,7 +31,7 @@ def definitions():
     for name,(description,fields,read_only,destructive,idempotent) in DEFS.items():
         props={k:({'type':v}) for k,v in fields.items()}
         # optional payment and read-only expected checks
-        if name=='openline_execute_protected_action':props['payment']={'type':'object'}
+        if name=='openline_execute_protected_action':props['payment']={'type':'object'};props['task_id']={'type':'string'}
         if name=='openline_verify_receipt':props['expected_head']={'type':'string'};props['expected_seq']={'type':'integer'}
         result.append({'name':name,'description':description,'inputSchema':{'type':'object','properties':props,'required':list(fields),'additionalProperties':False},
                        'annotations':{'readOnlyHint':read_only,'destructiveHint':destructive,'idempotentHint':idempotent,'openWorldHint':False}})
@@ -49,7 +51,7 @@ def create_official_server(engine):
         elif name=='openline_check_authorization':
             def fn(action:str,params:dict,authorization:str)->dict:return invoke(engine,'openline_check_authorization',locals())
         elif name=='openline_verify_receipt':
-            def fn(entries:list,seller_public:str)->dict:return invoke(engine,'openline_verify_receipt',locals())
+            def fn(entries:list,seller_public:str,expected_head:str|None=None,expected_seq:int|None=None)->dict:return invoke(engine,'openline_verify_receipt',locals())
         elif name=='openline_execute_protected_action':
             def fn(action:str,params:dict,authorization:str,nonce:str,payment:dict|None=None)->dict:
                 return invoke(engine,'openline_execute_protected_action',locals())

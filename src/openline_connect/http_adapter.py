@@ -5,13 +5,14 @@ from .signing import b64
 def create_app(engine):
     from fastapi import FastAPI,HTTPException
     from pydantic import BaseModel,ConfigDict
-    app=FastAPI(title='OpenLine Connect — fictional local actions',version='0.1.0rc1')
+    app=FastAPI(title='OpenLine Connect — fictional local actions',version='0.1.0rc5.dev6')
     class Request(BaseModel):
         model_config=ConfigDict(extra='forbid')
         action:str
         params:dict
         authorization:str|None=None
         nonce:str
+        task_id:str|None=None
         payment:dict|None=None
     @app.get('/healthz')
     def health():return {'status':'ok','scope':'local_sqlite_only'}
@@ -23,7 +24,9 @@ def create_app(engine):
         return d
     @app.post('/v1/connect/execute')
     def execute(req:Request):
-        try:return engine.execute(**req.model_dump())
+        try:
+            d=req.model_dump();task_id=d.pop('task_id',None)
+            return engine.execute_task(task_id=task_id,**d) if task_id is not None else engine.execute(**d)
         except ProtectionError as e:raise HTTPException(status_code=e.status,detail=e.code)
         except ValueError:raise HTTPException(status_code=400,detail='invalid_signed_evidence_or_shape')
         except Exception:raise HTTPException(status_code=503,detail='indeterminate_reconcile_required')

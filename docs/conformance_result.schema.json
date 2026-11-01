@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenLine native conformance local experimental result v1",
+  "type": "object",
+  "required": ["status", "checks", "elapsed_seconds", "limitations"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {"enum": ["PASS", "FAIL"]},
+    "checks": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "boolean"}},
+    "elapsed_seconds": {"type": "number", "minimum": 0},
+    "limitations": {"type": "string", "minLength": 1}
+  },
+  "$comment": "Caller must additionally require exit code=0 and every checks[name] == true for PASS."
+}
