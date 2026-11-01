@@ -1,0 +1,1 @@
+Read-only sample of actual signed owner permit, live facility snapshot, Worker B signed request, and **public** verification keys from a local simulated run. Private signing seeds, raw per-role identity files and writable SQLite databases are intentionally excluded. For current-day validation, run a fresh `walkthrough` because these credentials have finite `valid_until` values.

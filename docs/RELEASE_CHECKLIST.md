@@ -1,10 +1,38 @@
-# Publisher checklist — developer preview
+# Exact public-export release checklist (developer preview)
 
-1. Founder and qualified rights reviewer clear chain of title for every exported source file, AI-assisted contributions, employer/contractor/invention assignments, and patent license consequences; approve the **exact** public tree.
-2. Independently verify Python 3.11 and 3.13 clean install using `cryptography==50.0.2` and `mcp>=2,<3` with complete logs; execute `scripts/official_mcp_smoke.py` (real SDK, no fallback).
-3. Inspect the public export for signing secrets, private URLs, internal history, unsafe old authorization paths and artifacts. Review wheel/sdist contents and verify their SHA-256 against release manifest.
-4. Apache-2.0 and the NOTICE are staged in this public-candidate tree. Confirm the rights authorization covers these exact bytes before public distribution.
-5. Obtain founder approval for the final repository name, commit/tag, license, exact artifacts and publication wording. Only then create a separate public repository / push verified tag / publish draft release notes. Do not modify visibility of existing research repository.
-6. Do not publish to PyPI, turn on actions runners, deploy a server, use a real payment facilitator or contact external companies under the existing release commission.
+Run these commands in the **actual exported release source checkout**, not the private research workspace. Python >=3.11 is declared in `pyproject.toml`; check exact runtime coverage in `docs/COMPATIBILITY.md`.
 
-Production use is not approved: TLS, external settlement reconciliation, key custody, completeness witness, operator permissions, supply-chain and independent penetration testing are outside this preview.
+```sh
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install .
+python -m unittest discover -s tests -q
+python -O -m unittest discover -s tests -q
+openline-connect unified-demo
+openline-connect demo
+openline-connect conformance --target "python -m openline_connect.conformance_sample"
+python examples/support_ticket_receiver.py
+python examples/conventional_ticket_receiver.py
+```
+
+**Negative control:** run `openline-connect conformance --target "python -m openline_connect.conformance_defective"` separately. It must exit **nonzero** with JSON `"status": "FAIL"`; a positive result is a release blocker.
+
+Also verify with receipts: installed wheel and sdist separately; signed seller decision and outcome; exact-scope refusal, revocation, replacement, Worker B recovery without a new SQLite order; independent pinned-key verification; `docs/UNIFIED_SECURITY.md` trust boundaries; and `LICENSE`, `NOTICE`, `docs/THIRD_PARTY_NOTICES.md` in the actual exported tree. Verify source archive and distribution SHA-256 against the manifest and the exact CI commit.
+
+**Publication-specific owner gates:** confirm source/AI contribution chain-of-title, employer/contractor agreements and third-party license/notice obligations with a qualified reviewer where needed; approve the exact release tree and license. Do not infer ownership merely from a `LICENSE` file. Preserve existing public repository history and require a fresh public checkout and actual executed test results before announcing. Publication, hosting, PyPI, payments, robots and outreach require separate owner approvals.
+
+The experimental optional MCP route has **not** passed an official SDK handshake and is not a mandatory launch test. No missing private script or unpublished research checkout is required by these commands.
+
+## Dev2 public integration and robotics check
+
+From source root, after `python -m pip install '.[fastapi]' httpx`:
+
+```sh
+python examples/fastapi_existing_service.py
+python examples/robotics_sim/conformance.py --target A
+python examples/robotics_sim/conformance.py --target B
+python examples/robotics_sim/conformance.py --target V
+python examples/robotics_sim/negative_control.py   # nonzero exit required
+```
+
+Inspect independently verifiable receipts via the no-OpenLine-import reference `examples/independent_accept_verifier.py`. No independent developer study is claimed.

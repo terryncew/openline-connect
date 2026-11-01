@@ -1,5 +1,7 @@
-include README.md
-recursive-include docs *.md
+include README.md LICENSE NOTICE AGENTS.md GETTING_STARTED_UNIFIED.md CONVENTIONAL_COMPARE_UNIFIED.md
+recursive-include docs *.md *.json
 recursive-include tests *.py
-recursive-include scripts *.py
+recursive-include examples *.py
 recursive-include .agents *.md
+include docs/SKEPTIC_FIRST_FIVE_MINUTES.md
+recursive-include examples/robotics_sim *.py *.md *.json

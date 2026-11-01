@@ -1,12 +1,15 @@
-# Conformance truth table
+# Public release test and native-conformance contract
 
-`PYTHONPATH=src python -m unittest discover -s tests -v` exercises 35 methods:
-- Mandate signature, subject, seller, operation, target, parameter digest, expiry, amount, revocation and key succession
-- Atomic SQLite-local business effects, replay and changed-request conflict, 12-thread concurrency and restart
-- Unknown simulated settlement, post-settlement checkpoint crash and explicit seller-asserted refund-due/compensation (mock only)
-- Signed refusal without forged caller identity attribution, signed outcome binding, historical chain and anchored head checks
-- FastAPI protected ingress and blocked old route; real HTTP TestClient but NOT remote/production deployment
-- Six MCP tool descriptions and test-only JSON-RPC stdio subprocess, NOT official SDK negotiation
-- x402 v2-shaped decimal/epoch/EVM/Solana string validators, NOT official x402 integration
+Run from the **exported source root** after `python -m pip install .`:
 
-This product is a narrow generalization of PR95/96 local architecture. The existing conventional comparator attains correctness parity and no independent DX/time experiment occurred. Signed records are seller attestations only.
+```sh
+python -m unittest discover -s tests -q
+python -O -m unittest discover -s tests -q
+openline-connect conformance --target "python -m openline_connect.conformance_sample"
+```
+
+The exact export's GitHub private release CI #41259367261 executed **56/56** public tests in each mode with **zero skips**. Its inherited private gate #41259367271 executed **57/57** in each mode; the extra private-only test requires the deliberately unshipped controlled issue fixture. Run the commands yourself against the final exported commit; historical counts are not substitute proof.
+
+**Negative control:** `openline-connect conformance --target "python -m openline_connect.conformance_defective"` must exit nonzero and emit JSON `"status": "FAIL"`. The honest native target must pass all **12** checks, exit 0, and emit `"status": "PASS"`. The receiver's signed SQLite rows alone are insufficient; the conformance controller's separately signed local journal is checked. This checks **fictional controller admissions** on one host, not independent security certification or external physical effects.
+
+For scope, records, nonces, revocation, recovery and signed outcome evidence, see `docs/NATIVE_CONFORMANCE.md`, `docs/UNIFIED_EVIDENCE.md` and `docs/UNIFIED_SECURITY.md`. A competent conventional Ed25519/SQLite implementation can meet the same security properties; this suite does not establish a measured integration-speed advantage.
