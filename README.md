@@ -30,6 +30,22 @@ python -m unittest discover -s tests -v
 
 The demo creates fresh receiver and fictional buyer keys and a temporary receiver-signed grant, commits one local record update, safely replays it and verifies the signed history offline. It does not contact a chain, facilitator, provider or outside organization.
 
+## Test a source checkout before installing
+
+Python 3.11+ and `cryptography` are required. From the repository root:
+
+```bash
+python -m pip install 'cryptography>=42,<51'
+python scripts/run_tests.py
+PYTHONPATH="$PWD/src" python -m openline_connect.cli demo
+```
+
+The test runner supplies an absolute source path to subprocesses, including
+those started from a temporary directory. It also works when invoked by its
+absolute filename from another directory. The public package remains rc2;
+`unified-demo` and Accept conformance belong to a separate candidate and are
+not commands in this release.
+
 ## Security and limits
 
 All exposed MCP execute tools go through the default-deny SQLite engine. Authorized effects are **SQLite-local**, within one trusted host, and concurrent retry protection is bounded by that transaction. The package cannot protect against a privileged operator, direct database writes or effects in external systems. A signature proves that the receiver made a claim and that an observer's pinned key can validate it; it does not independently prove delivery, payment settlement or historical completeness without a pinned expected head.

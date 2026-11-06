@@ -4,6 +4,7 @@ Only application claims are OpenLine-specific; no proprietary signature format.
 """
 import base64,hashlib,json
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey,Ed25519PublicKey
+from cryptography.hazmat.primitives.serialization import Encoding,PublicFormat
 from cryptography.exceptions import InvalidSignature
 
 def canon(v):
@@ -15,7 +16,7 @@ def ub64(s):
     out=base64.urlsafe_b64decode(s+'='*(-len(s)%4))
     if b64(out)!=s:raise ValueError('noncanonical_base64')
     return out
-def pub(seed):return Ed25519PrivateKey.from_private_bytes(bytes.fromhex(seed)).public_key().public_bytes_raw().hex()
+def pub(seed):return Ed25519PrivateKey.from_private_bytes(bytes.fromhex(seed)).public_key().public_bytes(Encoding.Raw,PublicFormat.Raw).hex()
 def sign(claim,seed,kid):
     h=b64(canon({'alg':'EdDSA','kid':kid,'typ':'JWT'}));p=b64(canon(claim));msg=(h+'.'+p).encode('ascii')
     return h+'.'+p+'.'+b64(Ed25519PrivateKey.from_private_bytes(bytes.fromhex(seed)).sign(msg))
